@@ -6,7 +6,7 @@ p_load(here,
 
 fnGetFunctionsFromXL <- function(Path, sheets) {
   xlsx_cells(Path, sheets) %>% 
-    add_column(Path = str_remove_all(Path, root %>% 
+    add_column(Path = str_remove_all(Path, strRoot %>% 
                                        str_replace_all("\\\\", "\\\\\\\\"))) %>%
     select(Path, sheet, address, formula) %>% 
     drop_na(formula)  %>% 
