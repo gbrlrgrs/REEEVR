@@ -6,8 +6,7 @@ p_load(here,
 
 fnGetFunctionsFromXL <- function(Path, sheets) {
   xlsx_cells(Path, sheets) %>% 
-    add_column(Path = str_remove_all(Path, strRoot %>% 
-                                       str_replace_all("\\\\", "\\\\\\\\"))) %>%
+    add_column(Path = basename(Path)) %>%
     select(Path, sheet, address, formula) %>% 
     drop_na(formula)  %>% 
     distinct(Path, sheet, formula) %>% 
@@ -23,13 +22,16 @@ strRoot <- paste0(readRegistry("Environment", hive = "HCU", maxdepth = 2)$OneDri
 strFiles <- list.files(path       = strRoot,
                        pattern    = ".xls",
                        full.names = T)
+strFiles %<>%
+  set_names(basename(strFiles))
 
 tblWBs <- tibble(Path   = strFiles,
                  sheets = NA)
 
 tblFuns <- tblWBs %>% 
-  pmap_dfr(.f  = fnGetFunctionsFromXL,
-           .id = "Path")
+  pmap(fnGetFunctionsFromXL,
+       .progress = T) %>% 
+  list_rbind(names_to = "Path")
 
 tblFuns %>% 
   group_by(Path) %>% 
